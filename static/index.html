@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Prompt Optimizer Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- General Body & Layout --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa; /* Light grey background */
+            color: #212529; /* Dark text for readability */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top */
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px 20px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* --- Main App Container --- */
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 30px 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 16px;
+            color: #6c757d; /* Softer color for paragraphs */
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        /* --- Form Elements --- */
+        .controls-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            flex-wrap: wrap; /* Allows wrapping on smaller screens */
+        }
+
+        textarea, select {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        textarea:focus, select:focus {
+            outline: none;
+            border-color: #4f46e5; /* Professional blue/purple focus color */
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        textarea {
+            height: 160px;
+            resize: vertical;
+        }
+
+        /* --- Buttons --- */
+        button {
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        #optimize-btn {
+            background-color: #4f46e5; /* Primary action color */
+            color: #ffffff;
+        }
+
+        #optimize-btn:hover {
+            background-color: #4338ca;
+        }
+        
+        #optimize-btn:disabled {
+            background-color: #a5b4fc; /* Lighter color when disabled */
+            cursor: not-allowed;
+        }
+
+        .copy-btn {
+            background-color: #e5e7eb;
+            color: #374151;
+            font-size: 12px; 
+            padding: 6px 12px;
+        }
+        .copy-btn:hover {
+            background-color: #d1d5db;
+        }
+
+        /* --- Results Area --- */
+        #result {
+            margin-top: 30px;
+            padding: 25px;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+        }
+
+        #result h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #e9ecef;
+            margin: 25px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Prompt Optimizer Pro</h1>
+        <p>Refine your ideas into powerful, professional-grade prompts for any AI model.</p>
+
+        <textarea id="userInput" placeholder="Enter your prompt here... e.g., 'a cat in a hat'"></textarea>
+
+        <div class="controls-wrapper">
+            <div>
+                <label for="style-select" style="margin-right: 10px; font-weight: 500;">Select Style:</label>
+                <select id="style-select">
+                    <option value="professional">Professional</option>
+                    <option value="creative">Creative</option>
+                    <option value="enlarged">Enlarged & Detailed</option>
+                    <option value="instructive">Instructive</option>
+                    <option value="concise">Small but Perfect (Concise)</option>
+                </select>
+            </div>
+            <button id="optimize-btn" onclick="getOptimization()">Optimize Prompt</button>
+        </div>
+
+        <div id="result" style="display:none;"></div>
+    </div>
+
+    <script>
+        // Copy to clipboard function remains powerful and effective
+        function copyPrompt(buttonElement) {
+            const promptText = document.getElementById('prompt-to-copy').innerText;
+            navigator.clipboard.writeText(promptText).then(() => {
+                buttonElement.innerText = 'Copied!';
+                setTimeout(() => {
+                    buttonElement.innerText = 'Copy';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+                alert('Failed to copy prompt.');
+            });
+        }
+
+        async function getOptimization() {
+            const userInput = document.getElementById('userInput').value;
+            const resultDiv = document.getElementById('result');
+            const optimizeBtn = document.getElementById('optimize-btn');
+            const selectedStyle = document.getElementById('style-select').value;
+            
+            // --- JavaScript Enhancement: Disable button to prevent multiple clicks ---
+            optimizeBtn.disabled = true;
+            optimizeBtn.innerText = 'Optimizing...';
+            
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<p style="text-align:center;">Analyzing and refining your prompt, please wait...</p>';
+
+            try {
+                const response = await fetch('/optimize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: userInput, style: selectedStyle })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Build the final, styled HTML for the results
+                resultDiv.innerHTML = `
+                    <h3>Original Prompt Score: ${data.score} / 10</h3>
+                    <hr>
+                    <h3>Analysis:</h3>
+                    <div style="font-size:15px; line-height:1.6;">${data.analysis.replace(/\*/g, '•')}</div>
+                    <hr>
+                    <h3>Optimized Prompt <button class="copy-btn" onclick="copyPrompt(this)">Copy</button></h3>
+                    <p id="prompt-to-copy" style="text-align:left; color:#212529; font-size:15px; line-height:1.6;"><strong>${data.optimized_prompt}</strong></p>
+                `;
+
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: #dc3545;">Error: ${error.message}</p>`;
+            } finally {
+                // --- JavaScript Enhancement: Re-enable the button after completion ---
+                optimizeBtn.disabled = false;
+                optimizeBtn.innerText = 'Optimize Prompt';
+            }
+        }
+    </script>
+</body>
+</html>
